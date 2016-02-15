@@ -13,7 +13,9 @@ def usage():
     print(help_text)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "u:h", ["url=", "csgo", "help"])
+    short_opts = "u:h"
+    long_opts = ["url=", "livestreamer", "browser" "csgo", "help"]
+    opts, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
     api_url = "https://api.twitch.tv/kraken/streams?game="
 
     for o, a in opts:

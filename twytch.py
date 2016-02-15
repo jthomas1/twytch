@@ -17,6 +17,6 @@ else:
             print(str(key) + ": " + url)
             urls.append(url)
         choice = input("Pick a number: ")
-        address = (urls[int(choice)])
+        address = urls[int(choice)]
 
 os.system("livestreamer " + address + " source")

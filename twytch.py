@@ -3,6 +3,15 @@ import sys
 import requests
 import getopt
 
+
+def usage():
+    help_text = """
+        Usage:
+            -u or --url followed by a valid twitch url
+            --csgo for a list of top csgo streams
+    """
+    print(help_text)
+
 try:
     opts, args = getopt.getopt(sys.argv[1:], "u:h", ["url=", "csgo", "help"])
     api_url = "https://api.twitch.tv/kraken/streams?game="
@@ -23,13 +32,11 @@ try:
                 choice = input("Pick a number: ")
                 address = urls[int(choice)]
         elif o in ("-h", "--help"):
-            # usage()
+            usage()
             sys.exit()
-
         os.system("livestreamer " + address + " source")
 
 except getopt.GetoptError as err:
-    # print help information and exit:
     print(err)
-    # usage()
+    usage()
     sys.exit(2)

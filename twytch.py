@@ -14,10 +14,9 @@ def usage():
 
 try:
     short_opts = "u:h"
-    long_opts = ["url=", "livestreamer", "browser" "csgo", "help"]
+    long_opts = ["url=", "livestreamer", "browser", "csgo", "help"]
     opts, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
     api_url = "https://api.twitch.tv/kraken/streams?game="
-
     for o, a in opts:
         if o in ("-u", "--url"):
             address = a

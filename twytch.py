@@ -1,61 +1,109 @@
 import os
 import sys
+import argparse
 import requests
-import getopt
 import shutil
 import webbrowser
+import pyperclip
+
+
+help_text = """
+        Usage:
+            -u followed by a valid twitch url for livestream
+            -p followed by a valid twitch past broadcast url
+            --csgo for a list of top csgo streams
+    """
+
+csgo_uri = "https://api.twitch.tv/kraken/streams?game=" \
+           "Counter-Strike:+Global+Offensive"
 
 
 def usage():
-    help_text = """
-        Usage:
-            -u or --url followed by a valid twitch url for livestream
-            -p or --past followed by a valid twitch past broadcast url
-            --csgo for a list of top csgo streams
-    """
     print(help_text)
 
-try:
-    short_opts = "u:p:h"
-    long_opts = ["url=", "csgo", "help"]
-    opts, args = getopt.getopt(sys.argv[1:], short_opts, long_opts)
-    api_url = "https://api.twitch.tv/kraken/streams?game="
+
+def check_twitch_url(url):
+    if "twitch.tv/" in url:
+        return True
+    else:
+        return False
+
+
+def invalid_url(url):
+    print("Invalid url: {}".format(url))
+
+
+def get_top_streams():
+    response = requests.get(csgo_uri)
+    if response.status_code == requests.codes.ok:
+        channels = response.json()
+        urls = []
+        for key, item in enumerate(channels["streams"]):
+            url = item["channel"]["url"]
+            name = item["channel"]["display_name"]
+            print("{}: {} - {}".format(str(key), name, url))
+            urls.append(url)
+        choice = input("Pick a number: ")
+        return urls[int(choice)]
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Description of your program')
+    parser.add_argument(
+        'url',
+        help='Load twitch live stream by URL',
+        nargs='?')
+    parser.add_argument(
+        '-p',
+        help='Load twitch past broadcast by URL',
+        const="clip",
+        nargs='?')
+
+    args = parser.parse_args()
+    print(args)
+
     past_broadcast = False
-    for o, a in opts:
-        if o in ("-u", "--url"):
-            address = a
-        elif o in ("-p", "--past"):
-            address = a
+
+    if args.url is not None:
+        # use livestream url provided
+        if check_twitch_url(args.url):
+            url = args.url
+        else:
+            invalid_url(args.url)
+    elif args.url is None and args.p is None:
+        # get live stream url from pyperclip
+        if check_twitch_url(args.url):
+            url = pyperclip.paste()
+        else:
+            invalid_url(args.url)
+    elif args.url is None and args.p is "clip":
+        # get live stream url from pyperclip
+        if check_twitch_url(args.p):
+            url = pyperclip.paste()
             past_broadcast = True
-        elif o == "--csgo":
-            url = api_url + "Counter-Strike:+Global+Offensive"
-            response = requests.get(url)
-            if response.status_code == requests.codes.ok:
-                channels = response.json()
-                urls = []
-                for key, item in enumerate(channels["streams"]):
-                    url = item["channel"]["url"]
-                    name = item["channel"]["display_name"]
-                    print("{}: {} - {}".format(str(key), name, url))
-                    urls.append(url)
-                choice = input("Pick a number: ")
-                address = urls[int(choice)]
-        elif o in ("-h", "--help"):
-            usage()
-            sys.exit()
+        else:
+            invalid_url(args.p)
+    elif args.p is not None:
+        # use past broadcast url provided
+        if check_twitch_url(args.p):
+            url = args.p
+            past_broadcast = True
+        else:
+            invalid_url(args.p)
+    else:
+        print(":(")
 
     if shutil.which('livestreamer') is not None:
         print("livestreamer available, launching...")
-        cmd_str = "livestreamer " + address + " source "
+        cmd_str = "livestreamer " + url + " source "
         if(past_broadcast):
             cmd_str += " --player-passthrough hls"
         os.system(cmd_str)
     else:
         print("livestreamer unavailable, falling back to browser")
-        webbrowser.open(address)
+        webbrowser.open(url)
 
 
-except getopt.GetoptError as err:
-    print(err)
-    usage()
-    sys.exit(2)
+if __name__ == '__main__':
+    main()

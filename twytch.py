@@ -58,7 +58,7 @@ def launch_stream(url, is_past_broadcast):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Description of your program')
+        description='twitch.tv stream loader')
     parser.add_argument(
         'url',
         help='Load twitch live stream by URL',

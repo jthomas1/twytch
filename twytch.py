@@ -28,20 +28,37 @@ def invalid_url(url):
     out("Invalid url: {}".format(url))
 
 
-def get_top_streams():
-    csgo_uri = "https://api.twitch.tv/kraken/streams?game=" \
-               "Counter-Strike:+Global+Offensive"
-    response = requests.get(csgo_uri)
+def query_api(query):
+    uri = "https://api.twitch.tv/kraken/{}".format(query)
+    response = requests.get(uri)
     if response.status_code == requests.codes.ok:
-        channels = response.json()
-        urls = []
-        for key, item in enumerate(channels["streams"]):
-            url = item["channel"]["url"]
-            name = item["channel"]["display_name"]
-            out("{}: {} - {}".format(str(key), name, url))
-            urls.append(url)
-        choice = input("Pick a number: ")
-        return urls[int(choice)]
+        return response.json()
+
+
+def list_top_streams():
+    query = "streams?game=Counter-Strike:+Global+Offensive"
+    channels = query_api(query)
+    urls = []
+    for key, item in enumerate(channels["streams"]):
+        url = item["channel"]["url"]
+        name = item["channel"]["display_name"]
+        out("{}: {} - {}".format(str(key), name, url))
+        urls.append(url)
+    choice = input("Pick a number: ")
+    return urls[int(choice)]
+
+
+def list_past_broadcasts(channel):
+    query = "channels/{}/videos".format(channel)
+    json = query_api(query)
+    urls = []
+    for key, item in enumerate(json["videos"]):
+        title = item["title"]
+        url = item["url"]
+        out("{}: {} - {}".format(str(key), title, url))
+        urls.append(url)
+    choice = input("Pick a number: ")
+    return urls[int(choice)]
 
 
 def launch_stream(url, is_past_broadcast):
@@ -84,7 +101,7 @@ def main():
 
     if args.cs is True:
         out("Loading top CS:GO streams")
-        get_top_streams()
+        list_top_streams()
     elif args.p is not None:
         out("Loading past broadcast")
         if check_twitch_url(args.p):

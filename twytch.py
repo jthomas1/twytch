@@ -49,7 +49,7 @@ def list_top_streams():
 
 
 def list_past_broadcasts(channel):
-    query = "channels/{}/videos".format(channel)
+    query = "channels/{}/videos?broadcasts=true".format(channel)
     json = query_api(query)
     urls = []
     for key, item in enumerate(json["videos"]):
@@ -75,24 +75,28 @@ def launch_stream(url, is_past_broadcast):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='twitch.tv stream loader')
+        description='Simple twitch.tv stream loader.')
     parser.add_argument(
         'url',
-        help='Load twitch live stream by URL',
+        help='Load live stream by URL specified as parameter or from the clipboard',
         type=str,
         const="clip",
         action=GetUrlAction,
         nargs='?')
     parser.add_argument(
         '-p',
-        help='Load twitch past broadcast by URL',
+        help='Load a past broadcast by URL specified as parameter or from the clipboard.',
         type=str,
         const="clip",
         action=GetUrlAction,
         nargs='?')
     parser.add_argument(
+        '-pb',
+        help='List past broadcasts for a particular channel.',
+        type=str)
+    parser.add_argument(
         '-cs',
-        help='Show list of top CS:GO stream',
+        help='List top CS:GO streams.',
         action="store_true")
 
     args = parser.parse_args()
@@ -101,7 +105,10 @@ def main():
 
     if args.cs is True:
         out("Loading top CS:GO streams")
-        list_top_streams()
+        url = list_top_streams()
+    elif args.pb is not None:
+        past_broadcast = True
+        url = list_past_broadcasts(args.pb)
     elif args.p is not None:
         out("Loading past broadcast")
         if check_twitch_url(args.p):

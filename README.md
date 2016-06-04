@@ -1,6 +1,11 @@
 # twytch
-Get twitch streams
+A simple command line interface for accessing Twitch.tv live streams and past broadcasts.
 
-Currently will open in livestreamer either a url provided as an argument or a will present a list of the top csgo streams to choose from.
+## Usage
+Positional arguments:
+    * [Url] If nothing is specified clipboard content is used.
 
-Will update shortly with ability to choose between livestreamer or webbrowser to open them.
+Optional arguments:
+    * [-cs] Choose from a list of the top 25 CS:GO live streams
+    * [-p] Same as Url except for past broadcasts.
+    * [-pb] List past broadcasts for a specified channel name.

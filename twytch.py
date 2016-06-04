@@ -1,9 +1,10 @@
-import os
 import argparse
+import os
+import pyperclip
+import re
 import requests
 import shutil
 import webbrowser
-import pyperclip
 
 
 class GetUrlAction(argparse.Action):
@@ -18,10 +19,8 @@ def out(str):
 
 
 def check_twitch_url(url):
-    if "twitch.tv/" in url:
-        return True
-    else:
-        return False
+    # this regex isn't perfect but it does the job
+    return re.match('^(https?://)?(www\.)?twitch\.tv/\S*$', url)
 
 
 def invalid_url(url):
@@ -35,8 +34,8 @@ def query_api(query):
         return response.json()
 
 
-def list_top_streams():
-    query = "streams?game=Counter-Strike:+Global+Offensive"
+def list_top_streams_for_game(game):
+    query = "streams?game={}".format(game)
     channels = query_api(query)
     urls = []
     for key, item in enumerate(channels["streams"]):
@@ -50,9 +49,9 @@ def list_top_streams():
 
 def list_past_broadcasts(channel):
     query = "channels/{}/videos?broadcasts=true".format(channel)
-    json = query_api(query)
+    json_data = query_api(query)
     urls = []
-    for key, item in enumerate(json["videos"]):
+    for key, item in enumerate(json_data["videos"]):
         title = item["title"]
         url = item["url"]
         out("{}: {} - {}".format(str(key), title, url))
@@ -105,7 +104,7 @@ def main():
 
     if args.cs is True:
         out("Loading top CS:GO streams")
-        url = list_top_streams()
+        url = list_top_streams_for_game("Counter-Strike:+Global+Offensive")
     elif args.pb is not None:
         past_broadcast = True
         url = list_past_broadcasts(args.pb)

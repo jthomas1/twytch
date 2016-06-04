@@ -34,6 +34,9 @@ def query_api(query):
     response = requests.get(uri)
     if response.status_code == requests.codes.ok:
         return response.json()
+    else:
+        out("Error contacting twitch api, server returned: {}",
+            response.status_code)
 
 
 def list_games():
@@ -78,7 +81,7 @@ def launch_stream(url, is_past_broadcast):
     if shutil.which('livestreamer') is not None:
         out("livestreamer available, launching...")
         cmd_str = "livestreamer " + url + " source "
-        if(is_past_broadcast):
+        if is_past_broadcast:
             cmd_str += " --player-passthrough hls"
         os.system(cmd_str)
     else:
@@ -89,6 +92,7 @@ def launch_stream(url, is_past_broadcast):
 def main():
     parser = argparse.ArgumentParser(
         description='Simple twitch.tv stream loader.')
+
     parser.add_argument(
         'url',
         help='Load live stream by URL specified as parameter or from the clipboard',

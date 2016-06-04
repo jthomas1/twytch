@@ -9,6 +9,8 @@ import webbrowser
 
 class GetUrlAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
+        # when no value is provided, it defaults to 'clip'
+        # indicating we should grab url from the clipboard.
         if values is 'clip':
             values = pyperclip.paste()
         setattr(namespace, self.dest, values)

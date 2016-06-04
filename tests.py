@@ -30,6 +30,8 @@ class TwytchTests(unittest.TestCase):
             twytch.check_twitch_url("https://twitch.tv.com/mychannel"))
         self.assertFalse(
             twytch.check_twitch_url("https:// twitch.com/mychannel"))
+        self.assertFalse(
+            twytch.check_twitch_url("https://www.bbc.co.uk"))
 
 
 if __name__ == '__main__':

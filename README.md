@@ -11,13 +11,42 @@ All Urls must be valid for twitch.tv eg: https://twitch.tv/mychannel
 
 ### Optional arguments:
 - [-p] Same as Url except for past broadcasts.
+- [-g] List the top 10 games and then use that choice to list top 25 streams for that game.
 - [-pb] List past broadcasts for a specified channel name.
-- [-cs] Choose from a list of the top 25 CS:GO live streams
+- [-cs] Choose from a list of the top 25 CS:GO live streams.
 
 ### Examples:
-- `python twytch.py https://twitch.tv/mychannel` loads the steam at "channel"
-- `python twytch.py` - loads a stream url which has been copied to the clipboard.
-- `python twytch.py -p https://twitch.tv/mychannel/v/123456` loads the past broadcast specified
-- `python twytch.py -p` loads the past broadcast from a url on the clipboard
-- `python twytch.py -pb mychannel` lists the past broadcasts for "mychannel"
-- `python twytch,.py -cs` lists top 25 live streams for CS:GO 
+```
+# Loads the steam at "channel"
+$ python twytch.py https://twitch.tv/mychannel 
+```
+
+```
+# Loads a stream url which has been copied to the clipboard.
+$ python twytch.py
+```
+
+```
+# Loads the past broadcast specified
+$ python twytch.py -p https://twitch.tv/mychannel/v/123456
+```
+
+```
+# Loads the past broadcast from a url on the clipboard
+$ python twytch.py -p
+```
+
+```
+# Loads a list of the top 10 games
+$ python twytch.py -g
+```
+
+```
+# Lists the past broadcasts for "mychannel"
+$ python twytch.py -pb mychannel
+```
+
+```
+# Lists top 25 live streams for CS:GO 
+$ python twytch,.py -cs
+```

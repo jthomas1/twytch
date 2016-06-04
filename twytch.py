@@ -36,6 +36,18 @@ def query_api(query):
         return response.json()
 
 
+def list_games():
+    query = "games/top"
+    top_games = query_api(query)
+    games = []
+    for key, item in enumerate(top_games["top"]):
+        name = item["game"]["name"]
+        out("{}: {} - {} viewers".format(key, name, item["viewers"]))
+        games.append(name)
+    choice = input("Pick a number: ")
+    return games[int(choice)]
+
+
 def list_top_streams_for_game(game):
     query = "streams?game={}".format(game)
     channels = query_api(query)
@@ -92,6 +104,10 @@ def main():
         action=GetUrlAction,
         nargs='?')
     parser.add_argument(
+        '-g',
+        help='List streams by choosing a game.',
+        action="store_true")
+    parser.add_argument(
         '-pb',
         help='List past broadcasts for a particular channel.',
         type=str)
@@ -107,6 +123,11 @@ def main():
     if args.cs is True:
         out("Loading top CS:GO streams")
         url = list_top_streams_for_game("Counter-Strike:+Global+Offensive")
+    elif args.g is True:
+        out("Loading games")
+        game = list_games()
+        out("Loading top streams for {}".format(game))
+        url = list_top_streams_for_game(game.replace(" ", "+"))
     elif args.pb is not None:
         past_broadcast = True
         url = list_past_broadcasts(args.pb)

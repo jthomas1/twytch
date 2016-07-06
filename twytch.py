@@ -78,11 +78,14 @@ def list_past_broadcasts(channel):
 
 
 def launch_stream(url, is_past_broadcast, perf_opts):
+    perf_string = ' --player "vlc --file-caching {} ' \
+                         '--network-caching {}" --hls-segment-threads {} '
     if shutil.which('livestreamer') is not None:
         out("livestreamer available, launching...")
         cmd_str = "livestreamer " + url + " source "
         if perf_opts is not None:
-            cmd_str += ' --player "vlc --file-caching {} --network-caching {}" --hls-segment-threads {} '.format(perf_opts[0], perf_opts[1], perf_opts[2])
+            cmd_str += perf_string.format(
+                perf_opts[0], perf_opts[1], perf_opts[2])
         if is_past_broadcast:
             cmd_str += " --player-passthrough hls"
         os.system(cmd_str)

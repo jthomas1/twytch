@@ -8,6 +8,10 @@ import webbrowser
 
 
 class GetUrlAction(argparse.Action):
+    """Argparse action to retrieve URL from the clipboard if none is
+    provided by the user.
+    """
+
     def __call__(self, parser, namespace, values, option_string=None):
         # when no value is provided, it defaults to 'clip'
         # indicating we should grab url from the clipboard.
@@ -17,19 +21,33 @@ class GetUrlAction(argparse.Action):
 
 
 def out(str):
+    """Print messages to standard output with twytch application prefix"""
+
     print("<-twytch-> {}".format(str))
 
 
 def check_twitch_url(url):
+    """Check the URL provided by the user is for Twitch.tv"""
+
     # this regex isn't perfect but it does the job
     return re.match('^(https?://)?(www\.)?twitch\.tv/\S*$', url)
 
 
 def invalid_url(url):
+    """Inform the user that an invalid URL was provided"""
+
     out("Invalid url: {}".format(url))
 
 
 def query_api(query):
+    """Make a request to the twitch api with the specified query.
+    The query should not include the base API url as this is
+    provided by the function itself.
+
+    Keyword arguments:
+    query -- The endpoint to query. eg: 'games/top'
+    """
+
     uri = "https://api.twitch.tv/kraken/{}".format(query)
     response = requests.get(uri)
     if response.status_code == requests.codes.ok:
@@ -40,6 +58,8 @@ def query_api(query):
 
 
 def list_games():
+    """Query the twitch API for the top games by number of viewers."""
+
     query = "games/top"
     top_games = query_api(query)
     games = []
@@ -52,6 +72,8 @@ def list_games():
 
 
 def list_top_streams_for_game(game):
+    """List the top streams for the specified game."""
+
     query = "streams?game={}".format(game)
     channels = query_api(query)
     urls = []
@@ -65,6 +87,8 @@ def list_top_streams_for_game(game):
 
 
 def list_past_broadcasts(channel):
+    """List available past broadcasts for the specified channel."""
+
     query = "channels/{}/videos?broadcasts=true".format(channel)
     json_data = query_api(query)
     urls = []
@@ -78,14 +102,23 @@ def list_past_broadcasts(channel):
 
 
 def launch_stream(url, is_past_broadcast, perf_opts):
+    """Launch the stream requested by the user
+
+    Keyword arguments:
+    url -- the URL of the stream to load
+    is_past_broadcast -- whether to load as a past broadcast or not
+    perf_opts --- performance optimization options to pass to VLC
+    """
+
     perf_string = ' --player "vlc --file-caching {} ' \
-                         '--network-caching {}" --hls-segment-threads {} '
+                  '--network-caching {}" --hls-segment-threads {} '
     if shutil.which('livestreamer') is not None:
         out("livestreamer available, launching...")
         cmd_str = "livestreamer " + url + " source "
         if perf_opts is not None:
-            cmd_str += perf_string.format(
-                perf_opts[0], perf_opts[1], perf_opts[2])
+            cmd_str += perf_string.format(perf_opts[0],
+                                          perf_opts[1],
+                                          perf_opts[2])
         if is_past_broadcast:
             cmd_str += " --player-passthrough hls"
         os.system(cmd_str)
@@ -95,7 +128,6 @@ def launch_stream(url, is_past_broadcast, perf_opts):
 
 
 def main():
-
     parser = argparse.ArgumentParser(
         description='Simple twitch.tv stream loader.')
 
@@ -106,6 +138,7 @@ def main():
         const="clip",
         action=GetUrlAction,
         nargs='?')
+
     parser.add_argument(
         '-p',
         help='Load a past broadcast by URL specified as parameter or from the clipboard.',
@@ -113,14 +146,17 @@ def main():
         const="clip",
         action=GetUrlAction,
         nargs='?')
+
     parser.add_argument(
         '-g',
         help='List streams by choosing a game.',
         action="store_true")
+
     parser.add_argument(
         '-pb',
         help='List past broadcasts for a particular channel.',
         type=str)
+
     parser.add_argument(
         '-cs',
         help='List top CS:GO streams.',
@@ -137,11 +173,7 @@ def main():
                      'order: file-caching (ms), network-caching (ms) and ' \
                      'hls-segment-threads (1-3). Eg: 5000 5000 3'
 
-    perf_group.add_argument(
-        '-perf',
-        help=perf_help_text,
-        nargs=3,
-        type=int)
+    perf_group.add_argument('-perf', help=perf_help_text, nargs=3, type=int)
 
     args = parser.parse_args()
     past_broadcast = False

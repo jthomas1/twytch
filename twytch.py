@@ -107,7 +107,12 @@ def launch_stream(url, is_past_broadcast, perf_opts):
     Keyword arguments:
     url -- the URL of the stream to load
     is_past_broadcast -- whether to load as a past broadcast or not
-    perf_opts --- performance optimization options to pass to VLC
+    perf_opts --- a list of performance optimization options to pass to VLC
+                  these will be in the following order:
+                  file-caching (ms),
+                  network-caching (ms),
+                  hls-segment-threads (1-3).
+                  Eg: [5000, 5000, 3]
     """
 
     perf_string = ' --player "vlc --file-caching {} ' \

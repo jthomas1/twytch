@@ -53,8 +53,8 @@ def query_api(query):
     if response.status_code == requests.codes.ok:
         return response.json()
     else:
-        out("Error contacting twitch api, server returned: {}",
-            response.status_code)
+        out("Error contacting twitch api, server returned: {}".format(
+            response.status_code))
 
 
 def list_games():
@@ -71,10 +71,15 @@ def list_games():
     return games[int(choice)]
 
 
-def list_top_streams_for_game(game):
-    """List the top streams for the specified game."""
+def list_top_streams_for_game(game, count=25):
+    """List the top streams for the specified game.
 
-    query = "streams?game={}".format(game)
+    Keyword arguments:
+    game -- the name of the game for which streams should be retrieved
+    count -- the number of streams to get (default 25)
+    """
+
+    query = "streams?game={}&limit={}".format(game, count)
     channels = query_api(query)
     urls = []
     for key, item in enumerate(channels["streams"]):
@@ -165,7 +170,8 @@ def main():
     parser.add_argument(
         '-cs',
         help='List top CS:GO streams.',
-        action="store_true")
+        nargs='?',
+        const='25')
 
     perf_group = parser.add_mutually_exclusive_group()
 
@@ -184,9 +190,10 @@ def main():
     past_broadcast = False
     url = None
 
-    if args.cs is True:
+
+    if args.cs is not None:
         out("Loading top CS:GO streams")
-        url = list_top_streams_for_game("Counter-Strike:+Global+Offensive")
+        url = list_top_streams_for_game("Counter-Strike:+Global+Offensive", int(args.cs))
     elif args.g is True:
         out("Loading games")
         game = list_games()

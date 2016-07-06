@@ -77,10 +77,12 @@ def list_past_broadcasts(channel):
     return urls[int(choice)]
 
 
-def launch_stream(url, is_past_broadcast):
+def launch_stream(url, is_past_broadcast, performance_opts):
     if shutil.which('livestreamer') is not None:
         out("livestreamer available, launching...")
         cmd_str = "livestreamer " + url + " source "
+        if performance_opts:
+            cmd_str += ' --player "vlc --file-caching 5000 --network-caching 5000" --hls-segment-threads 3 '
         if is_past_broadcast:
             cmd_str += " --player-passthrough hls"
         os.system(cmd_str)
@@ -119,6 +121,10 @@ def main():
         '-cs',
         help='List top CS:GO streams.',
         action="store_true")
+    parser.add_argument(
+        '-op',
+        help='Add default performance optimizations to alleviate buffering.',
+        action='store_true')
 
     args = parser.parse_args()
     past_broadcast = False
@@ -152,7 +158,7 @@ def main():
         out("Something went wrong :(")
 
     if url is not None:
-        launch_stream(url, past_broadcast)
+        launch_stream(url, past_broadcast, args.op)
     else:
         out("No url :(")
 

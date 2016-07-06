@@ -77,12 +77,12 @@ def list_past_broadcasts(channel):
     return urls[int(choice)]
 
 
-def launch_stream(url, is_past_broadcast, performance_opts):
+def launch_stream(url, is_past_broadcast, perf_opts):
     if shutil.which('livestreamer') is not None:
         out("livestreamer available, launching...")
         cmd_str = "livestreamer " + url + " source "
-        if performance_opts:
-            cmd_str += ' --player "vlc --file-caching 5000 --network-caching 5000" --hls-segment-threads 3 '
+        if perf_opts is not None:
+            cmd_str += ' --player "vlc --file-caching {} --network-caching {}" --hls-segment-threads {} '.format(perf_opts[0], perf_opts[1], perf_opts[2])
         if is_past_broadcast:
             cmd_str += " --player-passthrough hls"
         os.system(cmd_str)
@@ -92,6 +92,7 @@ def launch_stream(url, is_past_broadcast, performance_opts):
 
 
 def main():
+
     parser = argparse.ArgumentParser(
         description='Simple twitch.tv stream loader.')
 
@@ -121,10 +122,23 @@ def main():
         '-cs',
         help='List top CS:GO streams.',
         action="store_true")
-    parser.add_argument(
-        '-op',
+
+    perf_group = parser.add_mutually_exclusive_group()
+
+    perf_group.add_argument(
+        '-dperf',
         help='Add default performance optimizations to alleviate buffering.',
         action='store_true')
+
+    perf_help_text = 'Specify performance optimzation parameters in this ' \
+                     'order: file-caching (ms), network-caching (ms) and ' \
+                     'hls-segment-threads (1-3). Eg: 5000 5000 3'
+
+    perf_group.add_argument(
+        '-perf',
+        help=perf_help_text,
+        nargs=3,
+        type=int)
 
     args = parser.parse_args()
     past_broadcast = False
@@ -157,8 +171,15 @@ def main():
     else:
         out("Something went wrong :(")
 
+    perf_opts = None
+
     if url is not None:
-        launch_stream(url, past_broadcast, args.op)
+        if args.dperf:
+            # default values for performance optimizations
+            perf_opts = [5000, 5000, 3]
+        elif args.perf is not None:
+            perf_opts = args.perf
+        launch_stream(url, past_broadcast, perf_opts)
     else:
         out("No url :(")
 

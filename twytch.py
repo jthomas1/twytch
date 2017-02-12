@@ -6,6 +6,9 @@ import requests
 import shutil
 import webbrowser
 
+# register for client ID on twitch website and put here
+TWITCH_CLIENT_ID = ''
+
 
 class GetUrlAction(argparse.Action):
     """Argparse action to retrieve URL from the clipboard if none is
@@ -48,13 +51,15 @@ def query_api(query):
     query -- The endpoint to query. eg: 'games/top'
     """
 
+    headers = {'Client-ID': TWITCH_CLIENT_ID}
+
     uri = "https://api.twitch.tv/kraken/{}".format(query)
-    response = requests.get(uri)
+    response = requests.get(uri, headers=headers)
     if response.status_code == requests.codes.ok:
         return response.json()
     else:
-        out("Error contacting twitch api, server returned: {}".format(
-            response.status_code))
+        out("Error contacting twitch api, server returned: {}"
+            .format(response.status_code))
 
 
 def list_games():
@@ -81,6 +86,7 @@ def list_top_streams_for_game(game, count=25):
 
     query = "streams?game={}&limit={}".format(game, count)
     channels = query_api(query)
+
     urls = []
     for key, item in enumerate(channels["streams"]):
         url = item["channel"]["url"]
@@ -88,7 +94,10 @@ def list_top_streams_for_game(game, count=25):
         out("{}: {} - {}".format(str(key), name, url))
         urls.append(url)
     choice = input("Pick a number: ")
-    return urls[int(choice)]
+    url = urls[int(choice)]
+
+    print(url)
+    return url
 
 
 def list_past_broadcasts(channel):
@@ -131,6 +140,8 @@ def launch_stream(url, is_past_broadcast, perf_opts):
                                           perf_opts[2])
         if is_past_broadcast:
             cmd_str += " --player-passthrough hls"
+
+        cmd_str += ' --http-header Client-ID={}'.format(TWITCH_CLIENT_ID)
         os.system(cmd_str)
     else:
         out("livestreamer unavailable, falling back to browser")
@@ -189,7 +200,6 @@ def main():
     args = parser.parse_args()
     past_broadcast = False
     url = None
-
 
     if args.cs is not None:
         out("Loading top CS:GO streams")
